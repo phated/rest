@@ -15,6 +15,7 @@
         - [CSRF Interceptor](#module-rest/interceptor/csrf)
     - [Error Detection and Recovery Interceptors](#interceptor-provided-error)
         - [Error Code Interceptor](#module-rest/interceptor/errorCode)
+        - [Error Transform Interceptor](#module-rest/interceptor/errorTransform)
         - [Retry Interceptor](#module-rest/interceptor/retry)
         - [Timeout Interceptor](#module-rest/interceptor/timeout)
     - [Fallback Interceptors](#interceptor-provided-fallback)
@@ -713,6 +714,56 @@ client({}).then(
     },
     function (response) {
         assert.same(500, response.status.code);
+    }
+);
+```
+
+
+<a name="module-rest/interceptor/errorTransform"></a>
+#### Error Transform Interceptor
+
+`rest/interceptor/errorTransform` ([src](../interceptor/errorTransform.js))
+
+Allows transformation of an error response through use of a `transform` configuration function.
+This is useful for transforming the entity of an error response into an Error object, among other
+uses.
+
+**Phases**
+
+- error
+
+**Configuration**
+
+<table>
+<tr>
+  <th>Property</th>
+  <th>Required?</th>
+  <th>Default</th>
+  <th>Description</th>
+</tr>
+<tr>
+  <td>transform</td>
+  <td>optional</td>
+  <td>noop</td>
+  <td>function that returns a new response object</td>
+</tr>
+</table>
+
+**Example**
+
+```javascript
+function transform (response) {
+  response.entity = new Error(response.entity.message);
+  return response;
+}
+
+client = rest.wrap(errorTransform, { transform: transform });
+client({}).then(
+    function (response) {
+        // not called
+    },
+    function (response) {
+        assert.equals(response.entity instanceof Error, true);
     }
 );
 ```
